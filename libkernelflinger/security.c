@@ -509,19 +509,41 @@ BOOLEAN is_efi_secure_boot_enabled(VOID)
         EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
         EFI_STATUS ret;
         UINT8 value;
+#ifdef ASSUME_BIOS_SECURE_BOOT
+        static BOOLEAN warned_setupmode = FALSE;
+        static BOOLEAN warned_secureboot = FALSE;
+#endif
 
         ret = get_efi_variable_byte(&global_guid, SETUP_MODE_VAR, &value);
         if (EFI_ERROR(ret))
                 return FALSE;
 
-        if (value != 0)
+        if (value != 0) {
+#ifdef ASSUME_BIOS_SECURE_BOOT
+                if (!warned_setupmode) {
+                        error(L"Warning: UEFI var SetupMode isn't 0");
+                        error(L"Warning: Kernelflinger is assuming it is 0");
+                        warned_setupmode = TRUE;
+                }
+#else
                 return FALSE;
+#endif
+        }
 
         ret = get_efi_variable_byte(&global_guid, SECURE_BOOT_VAR, &value);
         if (EFI_ERROR(ret))
                 return FALSE;
 
+#ifdef ASSUME_BIOS_SECURE_BOOT
+        if (value != 1 && !warned_secureboot) {
+                error(L"Warning: UEFI var SecureBoot isn't 1");
+                error(L"Warning: Kernelflinger is assuming it is 1, and enable secure boot mode");
+                warned_secureboot = TRUE;
+        }
+        return TRUE;
+#else
         return value == 1;
+#endif
 }
 
 #ifdef __SUPPORT_ABL_BOOT
