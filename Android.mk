@@ -72,7 +72,6 @@ ifeq ($(KERNELFLINGER_OS_SECURE_BOOT),true)
     KERNELFLINGER_CFLAGS += -DOS_SECURE_BOOT
 endif
 
-#Enable android verifed boot support(libavb)
 ifeq ($(BOARD_AVB_ENABLE),true)
     KERNELFLINGER_CFLAGS += -DUSE_AVB
     ifeq ($(TARGET_BUILD_VARIANT),userdebug)
@@ -80,6 +79,11 @@ ifeq ($(BOARD_AVB_ENABLE),true)
     endif
 endif
 
+ifeq ($(KERNELFLINGER_ASSUME_BIOS_SECURE_BOOT),true)
+    KERNELFLINGER_CFLAGS += -DASSUME_BIOS_SECURE_BOOT
+endif
+
+#Enable android verifed boot support(libavb)
 ifeq ($(BOARD_SLOT_AB_ENABLE),true)
     KERNELFLINGER_CFLAGS += -DUSE_SLOT
 endif
